@@ -1,0 +1,119 @@
+			+-------------------------+
+			|        EC 440           |
+			| PROJECT 0: Getting Real |
+			|     DESIGN DOCUMENT     |
+			+-------------------------+
+				   
+---- AUTHOR ----
+
+Koen Lin <khlin@bu.edu
+
+---- PRELIMINARIES ----
+
+>> If you have any preliminary comments on your submission, notes for the
+>> TAs, or extra credit, please give them here.
+
+>> Please cite any offline or online sources you consulted while
+>> preparing your submission, other than the Pintos documentation, course
+>> text, lecture notes, and course staff.
+
+			     Booting Pintos
+			     ==============
+
+---- QUESTIONS ---- 
+>> Put the screenshots of Pintos running in src/p0.
+>> A1: Is there any particular issue that you would like us to know?
+	There were no issues with opening QEMU and Bochs.
+
+			     Debugging
+			     =========
+
+---- QUESTIONS: BIOS ---- 
+>> B1: What is the first instruction that gets executed?
+	The first instruction that was executed was
+	=> 0xfff0:	add	%al,(%bx,%si)
+
+>> B2: At which physical address is this instruction located?
+	0xfff0
+
+>> B3: Can you guess why the first instruction is like this?
+	First instruction acts as a placeholder. Used for BIOS
+startup before jumping to main initialization code.
+
+>> B4: What are the next three instructions?
+	0xe05b:	add	%al,(%bx,%si)
+	0xe062:	add	%al,(%bx,%si)
+	0xe066:	add	%al,(%bx,%si)
+
+---- QUESTIONS: BOOTLOADER ---- 
+>> B5: How does the bootloader read disk sectors? In particular, what BIOS interrupt
+is used?
+	0x7c10: int 0x14
+The Pintos bootloader uses BIOS interrupt: int 0x13 because it provides BIOS disk 
+services for reading sectors from disk. 
+int 0x14 is for serial port communication, not disk access, 
+so it cannot be used to load the kernel from the boot device.
+
+>> B6: How does the bootloader decides whether it successfully finds the Pintos kernel?
+	The bootloader will check the carry flag after each int 0x13 call. If all the
+kernel sectors are read, the found the Pintos kernel.
+
+>> B7: What happens when the bootloader could not find the Pintos kernel?
+	If it can't find the Pintos kernel, that means it cannot load the kernel. 
+Bootloader should create an error message and halts the CPU with hlt.
+
+>> B8: At what point and how exactly does the bootloader transfer control to the Pintos kernel?
+	At 0x10000 the bootloader will transfer control to Pintos kernel once it is 
+fullly loaded into memory. It will do a jump to the kernel entry point, handling
+execution over to the kernel.
+
+
+---- QUESTIONS: KERNEL ---- 
+>> B9: At the entry of pintos_init(), what is the value of expression 
+init_page_dir[pd_no(ptov(0))] in hexadecimal format?
+	(gdb) p/x init_page_dir[pd_no(ptov(0))]
+	$1 = 0x0
+
+>> B10: When palloc_get_page() is called for the first time,
+	
+>> B10.1 what does the call stack look like?
+	(gdb) backtrace
+#0  palloc_get_page (flags=(PAL_ASSERT | PAL_ZERO)) at ../../threads/palloc.c:113
+#1  0xc00203aa in paging_init () at ../../threads/init.c:168
+#2  0xc002031b in pintos_init () at ../../threads/init.c:100
+#3  0xc002013d in start () at ../../threads/start.S:180
+
+>> B10.2 what is the return value in hexadecimal format?
+	$3 = 0xc0101000
+
+>> B10.3 what is the value of expression init_page_dir[pd_no(ptov(0))] in hexadecimal format?
+	$4 = 0x0
+
+>> B11: When palloc_get_page() is called for the third time,
+
+>> B11.1 what does the call stack look like?
+	(gdb) backtrace 
+#0  palloc_get_page (flags=(PAL_ASSERT | PAL_ZERO)) at ../../threads/palloc.c:113
+#1  0xc002044d in paging_init () at ../../threads/init.c:180
+#2  0xc002031b in pintos_init () at ../../threads/init.c:100
+#3  0xc002013d in start () at ../../threads/start.S:180
+
+>> B11.2 what is the return value in hexadecimal format?
+	$6 = 0x101000	
+
+>> B11.3 what is the value of expression init_page_dir[pd_no(ptov(0))] in hexadecimal format?
+	$7 = 0x102027
+
+			     Kernel Monitor
+			     ==============
+
+---- DATA STRUCTURES ----
+
+>> C1: Copy here the declaration of each new or changed `struct' or
+>> `struct' member, global or static variable, `typedef', or
+>> enumeration.  Identify the purpose of each in 25 words or less.
+
+---- ALGORITHMS ----
+>> C2: Explain how you read and write to the console for the kernel monitor.
+
+>> C3: Any additional enhancement you implement?
