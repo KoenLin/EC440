@@ -113,7 +113,17 @@ init_page_dir[pd_no(ptov(0))] in hexadecimal format?
 >> `struct' member, global or static variable, `typedef', or
 >> enumeration.  Identify the purpose of each in 25 words or less.
 
+static void kernel_monitor(void);	Runs a simple interactive kernel monitor when no kernel command line is provided.
+char buf[128]; int pos;	Buffer and position counter for reading user input in the kernel monitor.
+static size_t user_page_limit = SIZE_MAX;	Maximum number of pages allocated from user pool for palloc.
+static bool format_filesys;	Determines if file system should be formatted at startup.
+static const char *filesys_bdev_name, *scratch_bdev_name;	Names of block devices used for filesystem and scratch.
+static const char *swap_bdev_name;	Name of swap device (VM mode only).
+struct action { char *name; int argc; void (*function)(char **argv); };	Represents a kernel action (like run or filesystem commands) and how to execute it.
+static const struct action actions[]	Table of supported kernel actions for run_actions().
+
 ---- ALGORITHMS ----
 >> C2: Explain how you read and write to the console for the kernel monitor.
-
+	Read by using input_getc() which blocks until a key is pressed and characters are stored in buf with bounds check.
+Write by using putchar() and printf() to echo the things that were typed and display(the whoami command and 'invalid commands')
 >> C3: Any additional enhancement you implement?
